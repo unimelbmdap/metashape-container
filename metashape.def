@@ -36,7 +36,9 @@ From: ubuntu:26.04
         libxcb-shm0 libxcb-shape0 \
 	less \
 	libglu1-mesa \
-	libcurl4t64
+	libcurl4t64 \
+	libfontconfig1 \
+	libsm6
 
     cd /opt
     tar xzf metashape-pro_2_3_1_amd64.tar.gz
