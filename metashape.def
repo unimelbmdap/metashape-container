@@ -51,9 +51,8 @@ From: ubuntu:26.04
 
     cd /opt/metashape-pro
     /opt/metashape-pro/python/bin/python3.12 -m venv venv
-    source venv/bin/activate
-    pip install /opt/metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl
-    pip install ipython
+    /opt/metashape-pro/venv/bin/pip install /opt/metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl
+    /opt/metashape-pro/venv/bin/pip install ipython
 
     rm /opt/metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl
 
