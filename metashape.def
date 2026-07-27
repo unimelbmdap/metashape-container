@@ -56,5 +56,8 @@ From: ubuntu:26.04
 
     rm /opt/metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl
 
+%environment
+    export PATH=/opt/metashape-pro/venv/bin:${PATH}
+
 %runscript
     exec /opt/metashape-pro/metashape.sh "$@"
