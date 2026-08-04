@@ -9,7 +9,7 @@ From: ubuntu:26.04
     # the python package
     metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl /opt
 
-    License.lic /var/tmp/agisoft/licensing/licenses/
+    License.lic /opt/metashape-pro/License.lic
 
 %post
 
@@ -55,6 +55,9 @@ From: ubuntu:26.04
     /opt/metashape-pro/venv/bin/pip install ipython
 
     rm /opt/metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl
+
+    mkdir -p /var/tmp/agisoft/licensing/licenses/
+    cp /opt/metashape-pro/License.lic /var/tmp/agisoft/licensing/licenses/
 
 %environment
     export PATH=/opt/metashape-pro/venv/bin:${PATH}
