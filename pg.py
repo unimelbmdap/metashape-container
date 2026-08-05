@@ -100,8 +100,17 @@ def load_config(config_path: pathlib.Path | None) -> dict[str, typing.Any]:
     if config_path is None:
         return {}
 
-    with config_path.open() as handle:
-        config = json.load(handle)
+    raw_config = config_path.read_text()
+
+    if not raw_config:
+        return {}
+
+    full_config = json.loads(raw_config)
+
+    config = full_config.get("pg_settings", None)
+
+    if config is None:
+        return {}
 
     for (step_key, step_value) in config.items():
 
