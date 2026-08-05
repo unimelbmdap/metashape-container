@@ -76,7 +76,7 @@ def run(
 
         step_params = config.pop(step, {})
 
-        print(f"Running step '{step}' with params '{step_params}'")
+        print(f"Running step '{step}' with params '{step_params}'", flush=True)
 
         assert hasattr(chunk, step)
 
@@ -84,11 +84,11 @@ def run(
 
         func(**step_params)
 
-        print(f"Finished '{step}'" + "\n" + "-" * 10)
+        print(f"Finished '{step}'" + "\n" + "-" * 10, flush=True)
 
     doc.save(path=output_paths["doc"])
 
-    print(f"Saved Metashape file to '{output_paths['doc']}'")
+    print(f"Saved Metashape file to '{output_paths['doc']}'", flush=True)
 
     sys.exit(0)
 
