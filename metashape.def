@@ -42,6 +42,8 @@ From: ubuntu:26.04
 	libglu1-mesa \
 	libcurl4t64 \
 	libfontconfig1 \
+    intel-opencl-icd ocl-icd-libopencl1 clinfo \
+    pocl-opencl-icd libpocl-dev opencl-headers \
 	libsm6
 
     cd /opt
@@ -54,6 +56,8 @@ From: ubuntu:26.04
     /opt/metashape-pro/python/bin/python3.12 -m venv venv
     /opt/metashape-pro/venv/bin/pip install /opt/metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl
     /opt/metashape-pro/venv/bin/pip install ipython
+
+    ln -s /opt/metashape-pro/python/lib /opt/metashape-pro/python/bin/lib
 
     rm /opt/metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl
 
