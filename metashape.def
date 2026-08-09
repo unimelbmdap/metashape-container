@@ -42,11 +42,9 @@ From: ubuntu:26.04
 	libglu1-mesa \
 	libcurl4t64 \
 	libfontconfig1 \
+    intel-opencl-icd ocl-icd-libopencl1 clinfo \
+    pocl-opencl-icd libpocl-dev opencl-headers \
 	libsm6
-
-    # OpenCL - may cause crashing
-    # intel-opencl-icd ocl-icd-libopencl1 clinfo \
-    # pocl-opencl-icd libpocl-dev opencl-headers \
 
     cd /opt
     tar xzf metashape-pro_2_3_1_amd64.tar.gz
