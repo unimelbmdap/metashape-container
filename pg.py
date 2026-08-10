@@ -29,8 +29,6 @@ def run(
     output_dir: pathlib.Path,
     config_path: pathlib.Path,
     name: str,
-    *,
-    disable_gpu: bool,
 ) -> None:
 
     if not input_dir.is_dir():
@@ -69,10 +67,6 @@ def run(
         output_paths=output_paths,
         config_path=config_path,
     )
-
-    if disable_gpu:
-        Metashape.app.cpu_enable = True
-        Metashape.app.gpu_mask = 0
 
     doc = Metashape.Document()
 
@@ -149,6 +143,14 @@ def form_config(
 ) -> dict[str, typing.Any]:
 
     pre_config = {
+        "buildModel": {
+            "vertex_colors": False,
+            "build_texture": False,
+        },
+        "buildTexture": {
+            # it crashes without this
+            "blending_mode": "Metashape.BlendingMode.MosaicBlending",
+        },
         "exportModel": {
             "save_metadata_xml": True,
         },
@@ -251,15 +253,6 @@ def cli() -> None:
         help="Base name to use for output files.",
     )
 
-    parser.add_argument(
-        "--disable-gpu",
-        required=False,
-        type=bool,
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help="Disable the use of any GPUs",
-    )
-
     args = parser.parse_args()
 
     run(
@@ -267,7 +260,6 @@ def cli() -> None:
         output_dir=args.output_dir,
         config_path=args.config_path,
         name=args.name,
-        disable_gpu=args.disable_gpu,
     )
 
 
