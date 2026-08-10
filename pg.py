@@ -112,13 +112,13 @@ def load_config(config_path: pathlib.Path | None) -> dict[str, typing.Any]:
     if config is None:
         return {}
 
+    overrides = []
+
     for (step_key, step_value) in config.items():
 
         if step_key not in STEPS:
             msg = f"Unexpected key in configuration: '{step_key}'"
             raise ValueError(msg)
-
-        overrides = []
 
         for (key, value) in step_value.items():
 
