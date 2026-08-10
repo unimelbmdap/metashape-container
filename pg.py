@@ -149,7 +149,7 @@ def form_config(
         },
         "buildTexture": {
             # it crashes without this
-            "blending_mode": "Metashape.BlendingMode.MosaicBlending",
+            "blending_mode": Metashape.BlendingMode.MosaicBlending,
         },
         "exportModel": {
             "save_metadata_xml": True,
