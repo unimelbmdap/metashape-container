@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 import argparse
-import pathlib
+import datetime
 import itertools
-import sys
-import typing
 import json
 import operator
+import pathlib
+import pprint
+import sys
+import typing
 
 import Metashape
 
@@ -25,14 +27,21 @@ STEPS = (
 
 
 def run(
-    input_dir: pathlib.Path,
     output_dir: pathlib.Path,
-    config_path: pathlib.Path,
+    input_dir: pathlib.Path | None,
+    config_path: pathlib.Path | None,
     name: str,
 ) -> None:
 
-    if not input_dir.is_dir():
-        msg = f"Input directory '{input_dir}' does not exist"
+    if input_dir is not None and not input_dir.is_dir():
+            msg = f"Input directory '{input_dir}' does not exist"
+            raise ValueError(msg)
+
+    if input_dir is None and config_path is None:
+        msg = (
+            "A configuration file must be provided if `input_dir` is not "
+            "specified."
+        )
         raise ValueError(msg)
 
     if not output_dir.is_dir():
@@ -41,8 +50,6 @@ def run(
             raise ValueError(msg)
         msg = f"Output directory '{output_dir}' does not exist; creating"
         output_dir.mkdir(parents=True)
-
-    image_paths = get_image_paths(image_dir=input_dir)
 
     output_paths: dict[str, str] = {}
 
@@ -63,10 +70,14 @@ def run(
         output_paths[component] = component_path
 
     config = form_config(
-        image_paths=image_paths,
+        input_dir=input_dir,
         output_paths=output_paths,
         config_path=config_path,
     )
+
+    print("Using configuration:")
+    pprint.pprint(config)
+    print("-" * 10)
 
     doc = Metashape.Document()
 
@@ -76,7 +87,13 @@ def run(
 
         step_params = config.pop(step, {})
 
-        print(f"Running step '{step}' with params '{step_params}'", flush=True)
+        print(
+            (
+                f"{datetime.datetime.now()} :: "
+                f"Running step '{step}' with params '{step_params}'"
+            ),
+            flush=True,
+        )
 
         assert hasattr(chunk, step)
 
@@ -84,7 +101,13 @@ def run(
 
         func(**step_params)
 
-        print(f"Finished '{step}'" + "\n" + "-" * 10, flush=True)
+        print(
+            (
+                f"{datetime.datetime.now()} :: "
+                f"Finished '{step}'" + "\n" + "-" * 10
+            ),
+            flush=True,
+        )
 
     doc.save(path=output_paths["doc"])
 
@@ -137,7 +160,7 @@ def load_config(config_path: pathlib.Path | None) -> dict[str, typing.Any]:
 
 
 def form_config(
-    image_paths: tuple[str, ...],
+    input_dir: pathlib.Path | None,
     output_paths: dict[str, str],
     config_path: pathlib.Path | None,
 ) -> dict[str, typing.Any]:
@@ -158,10 +181,44 @@ def form_config(
 
     user_config = load_config(config_path=config_path)
 
+    if input_dir is None:
+
+        if (
+            "addPhotos" not in user_config
+            or "filenames" not in user_config["addPhotos"]
+        ):
+            msg = (
+                "If `input_dir` is not provided, the specific image paths must be "
+                "specified in the JSON configuration under the 'filenames' key of the "
+                "'addPhotos' key."
+            )
+            raise ValueError(msg)
+
+        # all good, ["addPhotos"]["filenames"] is in the config
+
+    else:
+
+        # provided both
+        # could potentially combine them, but better to be careful and raise an error
+        if (
+            "addPhotos" in user_config
+            and "filenames" in user_config["addPhotos"]
+        ):
+            msg = (
+                "Both `input_dir` and specific filenames in the configuration have "
+                "been provided. To avoid ambiguity, please specify one or the other."
+            )
+            raise ValueError(msg)
+
+        # figure out the paths to include
+        image_paths = get_image_paths(image_dir=input_dir)
+
+        if "addPhotos" not in user_config:
+            user_config["addPhotos"] = {}
+
+        user_config["addPhotos"]["filenames"] = image_paths
+
     post_config = {
-        "addPhotos": {
-            "filenames": image_paths,
-        },
         "exportModel": {
             "path": output_paths["model"],
         },
@@ -220,14 +277,7 @@ def cli() -> None:
 
     parser = argparse.ArgumentParser(
         description="Runs the Metashape photogrammetry pipeline.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-
-    parser.add_argument(
-        "--input-dir",
-        required=True,
-        type=pathlib.Path,
-        help="Directory containing the images to use as input.",
+        formatter_class=argparse.MetavarTypeHelpFormatter,
     )
 
     parser.add_argument(
@@ -238,11 +288,23 @@ def cli() -> None:
     )
 
     parser.add_argument(
+        "--input-dir",
+        required=False,
+        type=pathlib.Path,
+        help=(
+            "(Optional) Directory containing the images to use as input. "
+            "If not provided, the specific image paths must be specified "
+            "in the JSON configuration under the 'filenames' key of the "
+            "'addPhotos' key."
+        ),
+    )
+
+    parser.add_argument(
         "--config-path",
         required=False,
         default=None,
         type=pathlib.Path,
-        help="Path to a JSON file containing execution parameters.",
+        help="(Optional) Path to a JSON file containing execution parameters.",
     )
 
     parser.add_argument(
@@ -250,14 +312,14 @@ def cli() -> None:
         required=False,
         type=str,
         default="mesh",
-        help="Base name to use for output files.",
+        help="(Optional) Base name to use for output files. (default='mesh')",
     )
 
     args = parser.parse_args()
 
     run(
-        input_dir=args.input_dir,
         output_dir=args.output_dir,
+        input_dir=args.input_dir,
         config_path=args.config_path,
         name=args.name,
     )
