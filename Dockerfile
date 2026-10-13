@@ -1,9 +1,5 @@
 FROM ubuntu:26.04
 
-COPY metashape-pro_2_3_1_amd64.tar.gz /opt
-COPY metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl /opt
-COPY pg.py /opt
-
 ENV PATH=/opt/metashape-pro/venv/bin:${PATH}
 
 RUN apt-get update \
@@ -29,6 +25,10 @@ RUN apt-get update \
 	pocl-opencl-icd libpocl-dev opencl-headers \
         libsm6 \
     	&& rm -rf /var/lib/apt/lists/*
+
+COPY metashape-pro_2_3_1_amd64.tar.gz /opt
+COPY metashape-2.3.1-cp39.cp310.cp311.cp312.cp313-abi3-linux_x86_64.whl /opt
+COPY pg.py /opt
 
 RUN <<EOF
 cd /opt

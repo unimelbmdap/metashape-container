@@ -86,7 +86,7 @@ PRESETS = {
         build_model=Param(
             function="buildModel",
             param="face_count",
-            arg="Metashape.FaceCount.MediumFaceCount",
+            arg=Metashape.FaceCount.MediumFaceCount,
             value="Medium",
         ),
         build_uv=Param(
@@ -114,7 +114,7 @@ PRESETS = {
         build_model=Param(
             function="buildModel",
             param="face_count",
-            arg="Metashape.FaceCount.MediumFaceCount",
+            arg=Metashape.FaceCount.MediumFaceCount,
             value="Medium",
         ),
         build_uv=Param(
@@ -142,7 +142,7 @@ PRESETS = {
         build_model=Param(
             function="buildModel",
             param="face_count",
-            arg="Metashape.FaceCount.MediumFaceCount",
+            arg=Metashape.FaceCount.MediumFaceCount,
             value="Medium",
         ),
         build_uv=Param(
