@@ -1,12 +1,22 @@
 # metashape-container
 
-Apptainer definition for Agisoft Metashape software.
+A container for Agisoft Metashape software, with a simple Python wrapper around its photogrammetry pipeline.
 
 ## Getting started
 
-The `AGISOFT_FLS` environment variable needs to be used to set the license server.
+The `AGISOFT_FLS` environment variable needs to be set to your license server.
 
-Executing the container will run a simple Python wrapper around the Metashape photogrammetry pipeline; see `pg.py` for the details.
+The container can be run using Docker via:
+
+```bash
+docker run --env AGISOFT_FLS=${AGISOFT_FLS} djmannion/metashape-pg:latest --help
+```
+
+or using Apptainer via:
+
+```bash
+apptainer run docker://djmannion/metashape-pg:latest --help
+```
 
 ## Building
 
