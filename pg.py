@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import dataclasses
 import datetime
 import itertools
 import json
@@ -26,10 +27,143 @@ STEPS = (
 )
 
 
+@dataclasses.dataclass
+class Param:
+    function: str
+    param: str
+    value: str | int
+    arg: str | int | None = None
+
+    def __post_init__(self) -> None:
+
+        if self.arg is None:
+            self.arg = self.value
+
+
+@dataclasses.dataclass
+class ParamSet:
+    match_photos: Param
+    build_depth_maps: Param
+    build_model: Param
+    build_uv: Param
+    build_texture: Param
+
+    def __str__(self) -> str:
+        return "__".join(
+            str(getattr(self, field.name))
+            for field in dataclasses.fields(self)
+        )
+
+    def as_config_dict(self) -> dict[str, dict[str, str | int]]:
+
+        config: dict[str, dict[str, str | int]] = {}
+
+        for field in dataclasses.fields(self):
+
+            param = getattr(self, field.name)
+
+            func_config: dict[str, str | int] = config.get(param.function, {})
+
+            func_config[param.param] = param.arg
+
+            config[param.function] = func_config
+
+        return config
+
+
+PRESETS = {
+    "medium": ParamSet(
+        match_photos=Param(
+            function="matchPhotos",
+            param="downscale",
+            value=1,
+        ),
+        build_depth_maps=Param(
+            function="buildDepthMaps",
+            param="downscale",
+            value=16,
+        ),
+        build_model=Param(
+            function="buildModel",
+            param="face_count",
+            arg="Metashape.FaceCount.MediumFaceCount",
+            value="Medium",
+        ),
+        build_uv=Param(
+            function="buildUV",
+            param="texture_size",
+            value=8192,
+        ),
+        build_texture=Param(
+            function="buildTexture",
+            param="texture_size",
+            value=8192,
+        ),
+    ),
+    "high": ParamSet(
+        match_photos=Param(
+            function="matchPhotos",
+            param="downscale",
+            value=1,
+        ),
+        build_depth_maps=Param(
+            function="buildDepthMaps",
+            param="downscale",
+            value=8,
+        ),
+        build_model=Param(
+            function="buildModel",
+            param="face_count",
+            arg="Metashape.FaceCount.MediumFaceCount",
+            value="Medium",
+        ),
+        build_uv=Param(
+            function="buildUV",
+            param="texture_size",
+            value=8192,
+        ),
+        build_texture=Param(
+            function="buildTexture",
+            param="texture_size",
+            value=8192,
+        ),
+    ),
+    "highest": ParamSet(
+        match_photos=Param(
+            function="matchPhotos",
+            param="downscale",
+            value=1,
+        ),
+        build_depth_maps=Param(
+            function="buildDepthMaps",
+            param="downscale",
+            value=4,
+        ),
+        build_model=Param(
+            function="buildModel",
+            param="face_count",
+            arg="Metashape.FaceCount.MediumFaceCount",
+            value="Medium",
+        ),
+        build_uv=Param(
+            function="buildUV",
+            param="texture_size",
+            value=8192,
+        ),
+        build_texture=Param(
+            function="buildTexture",
+            param="texture_size",
+            value=8192,
+        ),
+    ),
+}
+
+
 def run(
     output_dir: pathlib.Path,
     input_dir: pathlib.Path | None,
     config_path: pathlib.Path | None,
+    preset: str | None,
     name: str,
 ) -> None:
 
@@ -73,6 +207,7 @@ def run(
         input_dir=input_dir,
         output_paths=output_paths,
         config_path=config_path,
+        preset=preset,
     )
 
     print("Using configuration:")
@@ -163,6 +298,7 @@ def form_config(
     input_dir: pathlib.Path | None,
     output_paths: dict[str, str],
     config_path: pathlib.Path | None,
+    preset: str | None,
 ) -> dict[str, typing.Any]:
 
     pre_config = {
@@ -178,6 +314,12 @@ def form_config(
             "save_metadata_xml": True,
         },
     }
+
+    preset_config = (
+        PRESETS[preset].as_config_dict()
+        if preset is not None
+        else {}
+    )
 
     user_config = load_config(config_path=config_path)
 
@@ -230,6 +372,7 @@ def form_config(
     config = {
         step: (
             pre_config.get(step, {})
+            | preset_config.get(step, {})
             | user_config.get(step, {})
             | post_config.get(step, {})
         )
@@ -277,7 +420,6 @@ def cli() -> None:
 
     parser = argparse.ArgumentParser(
         description="Runs the Metashape photogrammetry pipeline.",
-        formatter_class=argparse.MetavarTypeHelpFormatter,
     )
 
     parser.add_argument(
@@ -308,6 +450,14 @@ def cli() -> None:
     )
 
     parser.add_argument(
+        "--preset",
+        required=False,
+        default=None,
+        choices=list(PRESETS),
+        help="(Optional) Use a set of pre-defined configuration parameters.",
+    )
+
+    parser.add_argument(
         "--name",
         required=False,
         type=str,
@@ -321,6 +471,7 @@ def cli() -> None:
         output_dir=args.output_dir,
         input_dir=args.input_dir,
         config_path=args.config_path,
+        preset=args.preset,
         name=args.name,
     )
 
